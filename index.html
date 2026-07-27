@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Gyechive</title>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+<header class="header">
+<h1>Gyechive</h1>
+<p>치지직 <strong>계춘회</strong> 다시보기 검색기</p>
+</header>
+
+<main class="container">
+
+<section class="search-area">
+
+<div class="search-box">
+<svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
+<circle cx="10.5" cy="10.5" r="6.5"></circle>
+<line x1="15.5" y1="15.5" x2="21" y2="21"></line>
+</svg>
+<input id="search" type="text">
+</div>
+
+<button id="theme-toggle" class="theme-button" aria-label="화면모드 변경">
+
+<svg class="theme-icon sun-icon" viewBox="0 0 24 24">
+<circle cx="12" cy="12" r="5"></circle>
+<line x1="12" y1="1" x2="12" y2="4"></line>
+<line x1="12" y1="20" x2="12" y2="23"></line>
+<line x1="1" y1="12" x2="4" y2="12"></line>
+<line x1="20" y1="12" x2="23" y2="12"></line>
+<line x1="4" y1="4" x2="7" y2="7"></line>
+<line x1="17" y1="17" x2="20" y2="20"></line>
+<line x1="17" y1="7" x2="20" y2="4"></line>
+<line x1="4" y1="20" x2="7" y2="17"></line>
+</svg>
+
+<svg class="theme-icon moon-icon" viewBox="0 0 24 24">
+<path d="M21 12.8A9 9 0 1 1 11.2 3A7 7 0 0 0 21 12.8Z"></path>
+</svg>
+
+</button>
+
+</section>
+
+<section id="video-list" class="video-list"></section>
+
+<nav id="pagination" class="pagination"></nav>
+
+</main>
+
+<script src="./script.js"></script>
+</body>
+</html>
