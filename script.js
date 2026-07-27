@@ -35,14 +35,7 @@ function formatDuration(seconds){
 }
 
 function missingThumbnail(){
-    return `
-    <div class="thumbnail-placeholder">
-        <svg viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="38"></circle>
-            <text x="50" y="58" text-anchor="middle">19</text>
-            <line x1="22" y1="22" x2="78" y2="78"></line>
-        </svg>
-    </div>`;
+    return `<div class="thumbnail-placeholder"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="38"></circle><text x="50" y="58" text-anchor="middle">19</text><line x1="22" y1="22" x2="78" y2="78"></line></svg></div>`;
 }
 
 function renderThumbnail(video){
@@ -53,82 +46,72 @@ function renderThumbnail(video){
 function renderVideos(){
     const list=document.querySelector("#video-list");
     list.innerHTML="";
-
     const start=(currentPage-1)*VIDEO_PER_PAGE;
     const pageVideos=filteredVideos.slice(start,start+VIDEO_PER_PAGE);
 
     pageVideos.forEach(video=>{
         const card=document.createElement("article");
         card.className="video-card";
-
         card.innerHTML=`
         <a href="${video.url}" target="_blank">
-            <div class="thumbnail-box">
-                ${renderThumbnail(video)}
-            </div>
-            <div class="video-info">
-                <h3>${video.title}</h3>
-                <div class="meta">
-                    <span>${formatDate(video.date)} · ${formatDuration(video.duration)}</span>
-                    <span>조회 ${Number(video.views||0).toLocaleString()}</span>
-                </div>
-            </div>
+        <div class="thumbnail-box">${renderThumbnail(video)}</div>
+        <div class="video-info">
+        <h3>${video.title}</h3>
+        <div class="meta">
+        <span>${formatDate(video.date)} · ${formatDuration(video.duration)}</span>
+        <span>조회 ${Number(video.views||0).toLocaleString()}</span>
+        </div>
+        </div>
         </a>`;
-
         list.appendChild(card);
     });
+}
+
+function scrollToCards(){
+    const list=document.querySelector("#video-list");
+    if(!list)return;
+    const offset=80;
+    const position=list.getBoundingClientRect().top+window.scrollY-offset;
+    window.scrollTo({top:position,behavior:"smooth"});
 }
 
 function movePage(page){
     currentPage=page;
     renderVideos();
     renderPagination();
-
-    window.scrollTo({
-        top:0,
-        behavior:"smooth"
-    });
+    setTimeout(()=>{
+        scrollToCards();
+    },50);
 }
 
 function renderPagination(){
     const pagination=document.querySelector("#pagination");
     pagination.innerHTML="";
-
     const total=Math.ceil(filteredVideos.length/VIDEO_PER_PAGE);
 
     const addButton=(text,page)=>{
         const button=document.createElement("button");
         button.textContent=text;
-
-        if(page===currentPage){
-            button.classList.add("active");
-        }
-
-        button.onclick=()=>{
-            movePage(page);
-        };
-
+        if(page===currentPage)button.classList.add("active");
+        button.onclick=()=>movePage(page);
         pagination.appendChild(button);
     };
 
-    if(currentPage>1){
+    const group=Math.floor((currentPage-1)/10);
+    const start=group*10+1;
+    const end=Math.min(total,start+9);
+
+    if(start>1){
         addButton("<<",1);
-        addButton("<",currentPage-1);
-    }
-
-    let start=Math.max(1,currentPage-2);
-    let end=Math.min(total,start+4);
-
-    if(end-start<4){
-        start=Math.max(1,end-4);
+        addButton("<",start-1);
     }
 
     for(let i=start;i<=end;i++){
         addButton(i,i);
     }
 
-    if(currentPage<total){
-        addButton(">",currentPage+1);
+    if(end<total){
+        addButton(">",end+1);
         addButton(">>",total);
     }
 }
@@ -138,11 +121,7 @@ const search=document.querySelector("#search");
 if(search){
     search.addEventListener("input",e=>{
         const keyword=e.target.value.trim().toLowerCase();
-
-        filteredVideos=videos.filter(video=>
-            video.title.toLowerCase().includes(keyword)
-        );
-
+        filteredVideos=videos.filter(video=>video.title.toLowerCase().includes(keyword));
         currentPage=1;
         renderVideos();
         renderPagination();
@@ -153,11 +132,13 @@ document.addEventListener("keydown",e=>{
     const total=Math.ceil(filteredVideos.length/VIDEO_PER_PAGE);
 
     if(e.key==="ArrowLeft"&&currentPage>1){
-        movePage(currentPage-1);
+        const group=Math.floor((currentPage-1)/10);
+        movePage(Math.max(1,group*10));
     }
 
     if(e.key==="ArrowRight"&&currentPage<total){
-        movePage(currentPage+1);
+        const group=Math.floor((currentPage-1)/10);
+        movePage(Math.min(total,(group+1)*10+1));
     }
 });
 
@@ -169,7 +150,6 @@ function setTheme(theme){
     }else{
         document.body.classList.remove("light-mode");
     }
-
     localStorage.setItem("theme",theme);
 }
 
