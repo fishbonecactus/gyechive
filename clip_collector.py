@@ -11,22 +11,27 @@ HEAD={"User-Agent":"Mozilla/5.0","Referer":"https://chzzk.naver.com/","Origin":"
 
 def get(uid=None,count=None):
     p={"filterType":"ALL","orderType":"RECENT","page":0,"size":PAGE_SIZE}
+
     if uid:
         p["clipUID"]=uid
+
     if count:
         p["readCount"]=count
+
     r=requests.get(API,headers=HEAD,params=p,timeout=20)
+
     if r.status_code!=200:
         print("\n클립 API 오류")
         print(r.url)
         print(r.text)
-        input("엔터를 누르면 종료합니다.")
-        exit()
+        exit(1)
+
     return r.json()["content"]
 
 def parse(v):
     cid=v.get("clipUID")
     vid=v.get("videoId")
+
     return {
         "id":cid,
         "title":v.get("clipTitle"),
@@ -44,11 +49,13 @@ def load(path):
     if os.path.exists(path):
         with open(path,"r",encoding="utf-8") as f:
             return json.load(f)
+
     return []
 
 def make_state(data):
     if not data:
         return {}
+
     return {
         "lastClipDate":data[0]["date"],
         "lastClipUID":data[0]["id"]
@@ -56,8 +63,10 @@ def make_state(data):
 
 def save(data):
     os.makedirs(DATA,exist_ok=True)
+
     with open(OUT,"w",encoding="utf-8") as f:
         json.dump(data,f,ensure_ascii=False,indent=4)
+
     with open(STATE,"w",encoding="utf-8") as f:
         json.dump(make_state(data),f,ensure_ascii=False,indent=4)
 
@@ -69,6 +78,7 @@ def spin(i):
 def collect():
     old=load(OUT)
     state=load(STATE)
+
     if not state and old:
         state=make_state(old)
 
@@ -85,6 +95,7 @@ def collect():
         for v in data["data"]:
             if state and v["createdDate"]<=state["lastClipDate"]:
                 return new,old
+
             new.append(parse(v))
 
         spin(i)
