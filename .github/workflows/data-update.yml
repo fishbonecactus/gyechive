@@ -1,4 +1,4 @@
-name: Clip Update
+name: Data Update
 
 on:
   schedule:
