@@ -1,8 +1,12 @@
 import os,json,time,requests,sys
 
-CHANNEL_ID="a9a343510e132ea3026ff3cf682820b5"
-PAGE_SIZE=50
 BASE=os.path.dirname(os.path.abspath(__file__))
+
+with open(os.path.join(BASE,"config.json"),"r",encoding="utf-8") as f:
+    CONFIG=json.load(f)
+
+CHANNEL_ID=CONFIG["channelId"]
+PAGE_SIZE=50
 DATA=os.path.join(BASE,"data")
 OUT=os.path.join(DATA,"clip.json")
 STATE=os.path.join(DATA,"clip_state.json")
