@@ -5,6 +5,7 @@ async function loadVideos(){
 try{
 videos=await(await fetch("./data/vod.json")).json();
 filteredVideos=[...videos];
+applySort();
 renderVideos();
 renderPagination();
 }catch(e){console.error("데이터 로드 실패",e);}
@@ -37,11 +38,18 @@ return video.thumbnail?`<img class="thumbnail" src="${video.thumbnail}" loading=
 function renderVideos(){
 const list=document.querySelector("#video-list");
 list.innerHTML="";
+
+if(filteredVideos.length===0){
+list.innerHTML=`<article class="video-card no-result">검색 결과가 없습니다.</article>`;
+return;
+}
+
 const start=(currentPage-1)*VIDEO_PER_PAGE;
 
 filteredVideos.slice(start,start+VIDEO_PER_PAGE).forEach(video=>{
 const card=document.createElement("article");
 card.className="video-card";
+
 card.innerHTML=`
 <a href="${video.url||"#"}" target="_blank">
 <div class="thumbnail-box">${renderThumbnail(video)}</div>
@@ -53,6 +61,7 @@ card.innerHTML=`
 </div>
 </div>
 </a>`;
+
 list.appendChild(card);
 });
 }
@@ -72,6 +81,7 @@ setTimeout(scrollToCards,50);
 function renderPagination(){
 const pagination=document.querySelector("#pagination");
 pagination.innerHTML="";
+
 const total=Math.ceil(filteredVideos.length/VIDEO_PER_PAGE);
 if(total<=1)return;
 
@@ -83,44 +93,69 @@ button.onclick=()=>movePage(page);
 pagination.appendChild(button);
 };
 
-const group=Math.floor((currentPage-1)/10),start=group*10+1,end=Math.min(total,start+9);
+const group=Math.floor((currentPage-1)/10);
+const start=group*10+1;
+const end=Math.min(total,start+9);
 
-if(start>1){addButton("<<",1);addButton("<",start-1);}
+if(start>1){
+addButton("<<",1);
+addButton("<",start-1);
+}
+
 for(let i=start;i<=end;i++)addButton(i,i);
-if(end<total){addButton(">",end+1);addButton(">>",total);}
+
+if(end<total){
+addButton(">",end+1);
+addButton(">>",total);
+}
+}
+
+function updateClearButton(){
+const clear=document.querySelector("#clear-search");
+const search=document.querySelector("#search");
+if(!clear||!search)return;
+clear.style.display=search.value?"block":"none";
 }
 
 const search=document.querySelector("#search");
 
-if(search)search.oninput=e=>{
+if(search){
+search.oninput=e=>{
 const keyword=e.target.value.trim().toLowerCase();
 
 filteredVideos=videos.filter(v=>{
-
 const title=(v.title||"").toLowerCase();
-const category=(v.category||"").toLowerCase();
 
 let date="";
 if(v.date){
 const d=v.date.split(" ")[0].split("-");
-if(d.length===3){
-date=`${d[0]}.${d[1]}.${d[2]}`;
-}
+if(d.length===3)date=`${d[0]}.${d[1]}.${d[2]}`;
 }
 
-return (
-title.includes(keyword) ||
-category.includes(keyword) ||
-date.includes(keyword)
-);
-
+return title.includes(keyword)||date.includes(keyword);
 });
 
 currentPage=1;
 applySort();
 renderVideos();
 renderPagination();
+updateClearButton();
 };
+}
+
+const clearSearch=document.querySelector("#clear-search");
+
+if(clearSearch){
+clearSearch.onclick=()=>{
+search.value="";
+filteredVideos=[...videos];
+currentPage=1;
+applySort();
+renderVideos();
+renderPagination();
+updateClearButton();
+};
+}
 
 function applySort(){
 if(sort==="views")
@@ -148,7 +183,8 @@ document.body.classList.toggle("light-mode",theme==="light");
 localStorage.setItem("theme",theme);
 }
 
-if(themeButton)themeButton.onclick=()=>setTheme(document.body.classList.contains("light-mode")?"dark":"light");
+if(themeButton)
+themeButton.onclick=()=>setTheme(document.body.classList.contains("light-mode")?"dark":"light");
 
 setTheme(localStorage.getItem("theme")||"dark");
 loadVideos();
