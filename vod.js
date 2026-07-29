@@ -94,7 +94,28 @@ const search=document.querySelector("#search");
 
 if(search)search.oninput=e=>{
 const keyword=e.target.value.trim().toLowerCase();
-filteredVideos=videos.filter(v=>(v.title||"").toLowerCase().includes(keyword));
+
+filteredVideos=videos.filter(v=>{
+
+const title=(v.title||"").toLowerCase();
+const category=(v.category||"").toLowerCase();
+
+let date="";
+if(v.date){
+const d=v.date.split(" ")[0].split("-");
+if(d.length===3){
+date=`${d[0]}.${d[1]}.${d[2]}`;
+}
+}
+
+return (
+title.includes(keyword) ||
+category.includes(keyword) ||
+date.includes(keyword)
+);
+
+});
+
 currentPage=1;
 applySort();
 renderVideos();
